@@ -23,7 +23,7 @@ namespace ShipIt.Controllers
         }
 
         [HttpPost("")]
-        public void Post([FromBody] OutboundOrderRequestModel request)
+        public OutBoundOrderResponse Post([FromBody] OutboundOrderRequestModel request)
         {
             Log.Info(String.Format("Processing outbound order: {0}", request));
 
@@ -102,6 +102,8 @@ namespace ShipIt.Controllers
                 totalOrderWeight += lineItem.Quantity * _productRepository.GetProductById(lineItem.ProductId).Weight;
             }
             trucks = (int) Math.Ceiling(totalOrderWeight/(2000*1000));
+
+            return new OutBoundOrderResponse (trucks);
         }
     }
 }
