@@ -80,12 +80,13 @@ namespace ShipIt.Controllers
                 }
 
                 var item = stock[lineItem.ProductId];
+                //var weight = 0;
                 if (lineItem.Quantity > item.held)
                 {
                     errors.Add(
                         string.Format("Product: {0}, stock held: {1}, stock to remove: {2}", orderLine.gtin, item.held,
                             lineItem.Quantity));
-                }
+                } //else { weight += lineItem.Weight }, var trucks = weight/2000kg
             }
 
             if (errors.Count > 0)
@@ -94,6 +95,13 @@ namespace ShipIt.Controllers
             }
 
             _stockRepository.RemoveStock(request.WarehouseId, lineItems);
+            var totalOrderWeight = 0.0;
+            var trucks = 0;
+            foreach (var lineItem in lineItems)
+            {
+                totalOrderWeight += lineItem.Quantity * _productRepository.GetProductById(lineItem.ProductId).Weight;
+            }
+            trucks = (int) Math.Ceiling(totalOrderWeight/(2000*1000));
         }
     }
 }
