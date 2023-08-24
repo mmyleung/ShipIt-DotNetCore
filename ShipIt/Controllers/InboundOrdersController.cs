@@ -36,7 +36,7 @@ namespace ShipIt.Controllers
 
             Log.Debug(String.Format("Found operations manager: {0}", operationsManager));
 
-            var allStock = _stockRepository.GetStockByWarehouseId(warehouseId);
+            var allStock = _stockRepository.GetReStockByWarehouseId(warehouseId);
 
             Dictionary<Company, List<InboundOrderLine>> orderlinesByCompany = new Dictionary<Company, List<InboundOrderLine>>();
             Dictionary<string, Company> CompaniesByGcp = new Dictionary<string, Company>();
@@ -44,8 +44,8 @@ namespace ShipIt.Controllers
             foreach (var stock in allStock)
             {
                 Product product = new Product(_productRepository.GetProductById(stock.ProductId));
-                if (stock.held < product.LowerThreshold && !product.Discontinued)
-                {
+                // if (stock.held < product.LowerThreshold && !product.Discontinued)
+                // {
                     Company company = new Company();
 
                     if (CompaniesByGcp.ContainsKey(product.Gcp))
@@ -72,7 +72,7 @@ namespace ShipIt.Controllers
                             name = product.Name,
                             quantity = orderQuantity
                         });
-                }
+                // }
             }
 
             Log.Debug(String.Format("Constructed order lines: {0}", orderlinesByCompany));
