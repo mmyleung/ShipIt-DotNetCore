@@ -1,0 +1,9 @@
+ALTER TABLE em
+ADD emp_id serial;
+
+
+ALTER TABLE em
+DROP CONSTRAINT em_pkey;
+
+ALTER TABLE em
+ADD PRIMARY KEY (emp_id);
