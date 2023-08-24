@@ -32,4 +32,4 @@ Once set up, simply run dotnet run in the ShipIt directory.
 To run the tests you should be able to run dotnet test in the ShipItTests directory.
 
 ## Deploying to Production
-TODO
+Improved inbound order speed - created indices for gcp_cd in gcp (see 24-08-2023-AddIndices.sql).
