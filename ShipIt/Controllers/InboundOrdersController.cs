@@ -39,12 +39,24 @@ namespace ShipIt.Controllers
             var allStock = _stockRepository.GetStockByWarehouseId(warehouseId);
 
             Dictionary<Company, List<InboundOrderLine>> orderlinesByCompany = new Dictionary<Company, List<InboundOrderLine>>();
+            Dictionary<string, Company> CompaniesByGcp = new Dictionary<string, Company>();
+
             foreach (var stock in allStock)
             {
                 Product product = new Product(_productRepository.GetProductById(stock.ProductId));
-                if(stock.held < product.LowerThreshold && !product.Discontinued)
+                if (stock.held < product.LowerThreshold && !product.Discontinued)
                 {
-                    Company company = new Company(_companyRepository.GetCompany(product.Gcp));
+                    Company company = new Company();
+
+                    if (CompaniesByGcp.ContainsKey(product.Gcp))
+                    {
+                        company = CompaniesByGcp[product.Gcp];
+                    }
+                    else
+                    {
+                        company = new Company(_companyRepository.GetCompany(product.Gcp));
+                        CompaniesByGcp.Add(product.Gcp, company);
+                    }
 
                     var orderQuantity = Math.Max(product.LowerThreshold * 3 - stock.held, product.MinimumOrderQuantity);
 
@@ -53,7 +65,7 @@ namespace ShipIt.Controllers
                         orderlinesByCompany.Add(company, new List<InboundOrderLine>());
                     }
 
-                    orderlinesByCompany[company].Add( 
+                    orderlinesByCompany[company].Add(
                         new InboundOrderLine()
                         {
                             gtin = product.Gtin,
