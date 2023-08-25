@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
  using Microsoft.AspNetCore.Mvc;
  using ShipIt.Exceptions;
+using ShipIt.Helpers;
 using ShipIt.Models.ApiModels;
 using ShipIt.Repositories;
 
@@ -80,13 +81,12 @@ namespace ShipIt.Controllers
                 }
 
                 var item = stock[lineItem.ProductId];
-                //var weight = 0;
                 if (lineItem.Quantity > item.held)
                 {
                     errors.Add(
                         string.Format("Product: {0}, stock held: {1}, stock to remove: {2}", orderLine.gtin, item.held,
                             lineItem.Quantity));
-                } //else { weight += lineItem.Weight }, var trucks = weight/2000kg
+                } 
             }
 
             if (errors.Count > 0)
@@ -94,16 +94,18 @@ namespace ShipIt.Controllers
                 throw new InsufficientStockException(string.Join("; ", errors));
             }
 
-            _stockRepository.RemoveStock(request.WarehouseId, lineItems);
-            var totalOrderWeight = 0.0;
-            var trucks = 0;
-            foreach (var lineItem in lineItems)
+            List<PackingLine> packingLines = new List<PackingLine> ();
+            foreach (OrderLine orderLine in orderLines)
             {
-                totalOrderWeight += lineItem.Quantity * _productRepository.GetProductById(lineItem.ProductId).Weight;
-            }
-            trucks = (int) Math.Ceiling(totalOrderWeight/(2000*1000));
+                var packingLine = new PackingLine (orderLine, _productRepository.GetProductByGtin(orderLine.gtin).Name, _productRepository.GetProductByGtin(orderLine.gtin).Weight);
+                packingLines.Add(packingLine);
+            } 
 
-            return new OutBoundOrderResponse (trucks);
+            var manifest = PackingHelper.createManifest(packingLines);
+            _stockRepository.RemoveStock(request.WarehouseId, lineItems);
+            
+
+            return new OutBoundOrderResponse (manifest);
         }
     }
 }
